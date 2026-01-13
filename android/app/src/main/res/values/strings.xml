@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application Name -->
+    <string name="app_name">Keyman Myanmar</string>
+    
+    <!-- IME Name -->
+    <string name="ime_name">Myanmar3 Hardware Keyboard</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Myanmar Keyboard Settings</string>
+    
+    <!-- Subtypes -->
+    <string name="subtype_myanmar3_hardware">Myanmar3 (Hardware)</string>
+    <string name="subtype_standard">English (US)</string>
+    
+    <!-- Preferences -->
+    <string name="pref_auto_activate_title">Auto-activate Myanmar3</string>
+    <string name="pref_auto_activate_summary">Automatically activate Myanmar3 when hardware keyboard is connected</string>
+    
+    <!-- Notifications -->
+    <string name="keyboard_switched_myanmar3">Switched to Myanmar3</string>
+    <string name="keyboard_switched_standard">Switched to Standard</string>
+    
+    <!-- Help Text -->
+    <string name="help_hardware_keyboard">Press Ctrl+Tab to switch between keyboard layouts</string>
+    <string name="help_setup">Enable Myanmar3 Keyboard in Settings > System > Languages \u0026 input > Virtual keyboard</string>
+</resources>

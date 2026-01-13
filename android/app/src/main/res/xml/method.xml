@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.keyman.myanmar.SettingsActivity"
+    android:supportsSwitchingToNextInputMethod="true">
+    
+    <!-- Subtype for Myanmar3 Hardware Keyboard -->
+    <subtype
+        android:label="@string/subtype_myanmar3_hardware"
+        android:imeSubtypeLocale="my"
+        android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="KeyboardLayoutSet=myanmar3_hardware,AsciiCapable,SupportTouchPositionCorrection,EmojiCapable"
+        android:isAsciiCapable="false" />
+    
+    <!-- Subtype for Standard English (fallback) -->
+    <subtype
+        android:label="@string/subtype_standard"
+        android:imeSubtypeLocale="en_US"
+        android:imeSubtypeMode="keyboard"
+        android:isAsciiCapable="true" />
+    
+</input-method>

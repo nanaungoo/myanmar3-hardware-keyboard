@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <PreferenceCategory
+        app:title="Hardware Keyboard"
+        app:iconSpaceReserved="false">
+        
+        <SwitchPreferenceCompat
+            app:key="auto_activate_myanmar3"
+            app:title="@string/pref_auto_activate_title"
+            app:summary="@string/pref_auto_activate_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+            
+    </PreferenceCategory>
+    
+    <PreferenceCategory
+        app:title="Help"
+        app:iconSpaceReserved="false">
+        
+        <Preference
+            app:title="How to use"
+            app:summary="@string/help_hardware_keyboard"
+            app:selectable="false"
+            app:iconSpaceReserved="false" />
+            
+        <Preference
+            app:title="Setup instructions"
+            app:summary="@string/help_setup"
+            app:selectable="false"
+            app:iconSpaceReserved="false" />
+            
+    </PreferenceCategory>
+    
+    <PreferenceCategory
+        app:title="About"
+        app:iconSpaceReserved="false">
+        
+        <Preference
+            app:title="Version"
+            app:summary="1.0.0"
+            app:selectable="false"
+            app:iconSpaceReserved="false" />
+            
+    </PreferenceCategory>
+    
+</androidx.preference.PreferenceScreen>
