@@ -1,0 +1,12 @@
+    /**
+     * Handles Myanmar input using NEW pattern matching approach.
+     */
+    private fun handleMyanmarInputWithPatterns(text: String) {
+        val ic = currentInputConnection ?: return
+        
+        // Process input through pattern matcher
+        val output = patternMatcher.processInput(text)
+        
+        // Show as composing text
+        ic.setComposingText(output, 1)
+    }
