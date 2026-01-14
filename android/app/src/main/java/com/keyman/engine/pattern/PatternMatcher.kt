@@ -42,10 +42,10 @@ class PatternMatcher {
      * 
      * Algorithm:
      * 1. Add character to buffer
-     * 2. Build match context
-     * 3. Try rules in priority order
-     * 4. Apply first matching rule
-     * 5. Update buffer with result
+     * 2. Build match context with full buffer
+     * 3. Try rules in priority order (context-aware patterns first)
+     * 4. Apply first matching rule and transform buffer
+     * 5. Return transformed buffer
      * 
      * @param char Input character
      * @return Transformed output string
@@ -58,17 +58,28 @@ class PatternMatcher {
             lastKey = char
         )
         
-        // Try to find matching rule
+        // Try to find matching rule (high priority = context-aware)
         for (rule in rules) {
             val matchResult = rule.matches(context)
             if (matchResult != null) {
                 val output = rule.generateOutput(matchResult)
                 
-                // Update buffer with transformed output
-                buffer.clear()
-                buffer.append(output)
+                // CRITICAL: Replace matched portion with output
+                val matchedText = matchResult.matched
+                val bufferText = buffer.toString()
                 
-                return output
+                if (bufferText.endsWith(matchedText)) {
+                    // Remove matched portion and add output
+                    val newBuffer = bufferText.substring(0, bufferText.length - matchedText.length) + output
+                    buffer.clear()
+                    buffer.append(newBuffer)
+                } else {
+                    // Pattern generated output without match - just use it
+                    buffer.clear()
+                    buffer.append(output)
+                }
+                
+                return buffer.toString()
             }
         }
         

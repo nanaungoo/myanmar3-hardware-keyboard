@@ -37,9 +37,10 @@ object ZawCodePatterns {
     private fun getReorderingRules(): List<PatternRule> {
         return listOf(
             // Pre-base vowel reordering: ေ + consonant -> consonant + ေ
+            // $1 = ေ (pre-base vowel), $2 = consonant
             PatternRule(
                 lhs = "U1031 + consonant",
-                rhs = "$2 + U1031",
+                rhs = "$2$1",  // Swap: consonant + pre-base vowel
                 priority = 100
             )
         )

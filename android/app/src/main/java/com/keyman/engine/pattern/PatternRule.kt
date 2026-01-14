@@ -30,11 +30,18 @@ data class PatternRule(
      * @return MatchResult containing matched parts, or null if no match
      */
     fun matches(context: MatchContext): MatchResult? {
-        // Simple implementation for now - exact string match
-        val pattern = lhs.replace("'", "").trim()
+        // Handle different pattern types
         
-        // Check if buffer ends with this pattern
-        if (context.buffer.endsWith(pattern)) {
+        // Pattern type 1: Buffer-based pattern (e.g., "U1031 + consonant")
+        if (lhs.contains("+")) {
+            return matchBufferPattern(context)
+        }
+        
+        // Pattern type 2: Simple literal (e.g., "'a'")
+        val pattern = lhs.trim().removeSurrounding("'", "'")
+        
+        // Check if last key matches this pattern
+        if (context.lastKey == pattern) {
             return MatchResult(
                 matched = pattern,
                 capturedGroups = listOf(pattern)
@@ -45,14 +52,69 @@ data class PatternRule(
     }
     
     /**
+     * Matches buffer-based patterns like "U1031 + consonant".
+     */
+    private fun matchBufferPattern(context: MatchContext): MatchResult? {
+        val buffer = context.buffer
+        
+        // Parse pattern: "U1031 + consonant" -> check if buffer ends with ေ + consonant
+        if (lhs.contains("U1031") && lhs.contains("consonant")) {
+            // Check if buffer is: ေ + any consonant
+            if (buffer.length >= 2) {
+                val preBase = buffer[buffer.length - 2]
+                val consonant = buffer[buffer.length - 1]
+                
+                if (preBase == '\u1031' && isConsonant(consonant)) {
+                    return MatchResult(
+                        matched = buffer.takeLast(2),
+                        capturedGroups = listOf(preBase.toString(), consonant.toString())
+                    )
+                }
+            }
+        }
+        
+        return null
+    }
+    
+    /**
+     * Checks if character is a Myanmar consonant.
+     */
+    private fun isConsonant(char: Char): Boolean {
+        return char in '\u1000'..'\u1021'
+    }
+    
+    /**
      * Generates output based on matched context.
      * 
      * @param matchResult Result from matches()
      * @return Generated output string
      */
     fun generateOutput(matchResult: MatchResult): String {
-        // Simple implementation - return RHS with quotes removed
-        return rhs.replace("'", "").replace("U", "\\u").trim()
+        var output = rhs.trim()
+        
+        // Replace capture group references ($1, $2)
+        // Capture groups contain actual characters, not Unicode codes
+        for (i in matchResult.capturedGroups.indices) {
+            val ref = "$${i + 1}"
+            if (output.contains(ref)) {
+                output = output.replace(ref, matchResult.capturedGroups[i])
+            }
+        }
+        
+        // If output still has Unicode codes after substitution, convert them
+        // This handles cases where RHS has literal Unicode codes like U1031
+        if (output.contains("U")) {
+            // Replace any remaining Unicode codes
+            val regex = Regex("U([0-9A-Fa-f]{4})")
+            output = regex.replace(output) { matchResult ->
+                val hexCode = matchResult.groupValues[1]
+                val charCode = hexCode.toInt(16)
+                charCode.toChar().toString()
+            }
+        }
+        
+        // Return processed output (remove quotes if present)
+        return output.removeSurrounding("'", "'")
     }
 }
 

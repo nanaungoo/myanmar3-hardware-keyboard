@@ -5,7 +5,6 @@ import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import com.keyman.engine.hardware.HardwareKeyboardMapper
-import com.keyman.engine.hardware.SyllableBufferManager
 import com.keyman.engine.pattern.PatternMatcher
 import com.keyman.engine.pattern.ZawCodePatterns
 
@@ -13,20 +12,16 @@ import com.keyman.engine.pattern.ZawCodePatterns
  * Main Input Method Service for Keyman keyboard with Myanmar3 hardware keyboard support.
  * 
  * This service extends Android's InputMethodService to provide custom keyboard
- * functionality, including support for Myanmar3 Unicode character input via
- * physical hardware keyboards.
+ * functionality using KeyMagic-style pattern matching for Myanmar Unicode input.
  * 
  * Key Features:
  * - Hardware keyboard interception and remapping
- * - Myanmar3 Unicode character support
- * - Combining mark handling
+ * - Pattern-based Myanmar Unicode transformation
+ * - Context-aware character reordering
  * - Keyboard switching via Ctrl+Tab
  * 
- * The service intercepts hardware key events before they reach the application,
- * allowing for custom character mapping and input processing.
- * 
  * @author Myanmar Keyboard Implementation Team
- * @since 1.0.0
+ * @since 3.0.0
  */
 class KeyboardService : InputMethodService() {
     
@@ -37,16 +32,10 @@ class KeyboardService : InputMethodService() {
     // Hardware keyboard mapper
     private lateinit var hardwareKeyMapper: HardwareKeyboardMapper
     
-    // Syllable buffer for Myanmar Unicode reordering (OLD SYSTEM)
-    private val syllableBuffer = SyllableBufferManager()
-    
-    // Pattern matcher for KeyMagic-style rules (NEW SYSTEM)
+    // Pattern matcher for KeyMagic-style rules
     private val patternMatcher = PatternMatcher().apply {
         addRules(ZawCodePatterns.getRules())
     }
-    
-    // Flag to enable pattern matcher (for testing)
-    private var usePatternMatcher = true  // ENABLED for testing!
     
     /**
      * Tracks whether Myanmar3 hardware keyboard mode is currently active.
@@ -67,6 +56,8 @@ class KeyboardService : InputMethodService() {
     
     override fun onCreate() {
         super.onCreate()
+        // Initialize hardware keyboard mapper
+        hardwareKeyMapper = HardwareKeyboardMapper(this)
         // Initialize keyboard state from preferences
         loadKeyboardPreferences()
     }
@@ -143,6 +134,8 @@ class KeyboardService : InputMethodService() {
                 if (ic != null) {
                     // Commit any composing text to prevent accumulation
                     ic.finishComposingText()
+                    // CRITICAL: Clear pattern matcher buffer
+                    patternMatcher.clear()
                 }
                 // Let system handle the Enter (newline)
                 return super.onKeyDown(keyCode, event)
@@ -159,13 +152,7 @@ class KeyboardService : InputMethodService() {
                 val mappedText = hardwareKeyMapper.mapKey(keyCode, it)
                 
                 if (mappedText != null) {
-                    if (usePatternMatcher) {
-                        // NEW: Pattern matching approach
-                        handleMyanmarInputWithPatterns(mappedText)
-                    } else {
-                        // OLD: Syllable buffer reordering
-                        handleMyanmarInput(mappedText)
-                    }
+                    handleMyanmarInput(mappedText)
                     return true
                 }
                 
@@ -264,55 +251,11 @@ class KeyboardService : InputMethodService() {
     // ========================================================================
     
     /**
-     * Handles Myanmar character input with syllable buffering and reordering.
-     * 
-     * This method:
-     * 1. Adds character to syllable buffer
-     * 2. Handles syllable boundary detection
-     * 3. Reorders characters to proper Unicode storage order
-     * 4. Shows composing text or commits complete syllables
+     * Handles Myanmar character input using pattern matching.
      * 
      * @param text The Myanmar Unicode character to process
      */
     private fun handleMyanmarInput(text: String) {
-        val ic = currentInputConnection ?: return
-        
-        when (val action = syllableBuffer.addCharacter(text)) {
-            is com.keyman.engine.hardware.SyllableBufferManager.BufferAction.Continue -> {
-                // Update composing text with current buffer
-                val composing = syllableBuffer.getCurrentBuffer()
-                ic.setComposingText(composing, 1)
-            }
-            is com.keyman.engine.hardware.SyllableBufferManager.BufferAction.Emit -> {
-                // CRITICAL FIX: Clear composing region before committing
-                ic.setComposingText("", 1)  // Delete composing region
-                ic.finishComposingText()     // Finish composing state
-                ic.commitText(action.syllable, 1)
-                // Show new syllable composing text if buffer not empty
-                val composing = syllableBuffer.getCurrentBuffer()
-                if (composing.isNotEmpty()) {
-                    ic.setComposingText(composing, 1)
-                }
-            }
-            is com.keyman.engine.hardware.SyllableBufferManager.BufferAction.EmitAndStart -> {
-                // CRITICAL FIX: Clear composing region before committing  
-                ic.setComposingText("", 1)  // Delete composing region
-                ic.finishComposingText()     // Finish composing state
-                ic.commitText(action.completed, 1)
-                // Commit the space/punctuation character
-                if (action.newStart.isNotEmpty()) {
-                    ic.commitText(action.newStart, 1)
-                }
-            }
-        }
-    }
-    
-    /**
-     * Handles Myanmar input using NEW pattern matching approach.
-     * 
-     * @param text The Myanmar Unicode character to process
-     */
-    private fun handleMyanmarInputWithPatterns(text: String) {
         val ic = currentInputConnection ?: return
         
         // Process input through pattern matcher
@@ -324,18 +267,16 @@ class KeyboardService : InputMethodService() {
     
     /**
      * Handles backspace in Myanmar mode.
-     * Removes last character from syllable buffer or falls through to system.
      */
     private fun handleMyanmarBackspace() {
         val ic = currentInputConnection ?: return
         
-        syllableBuffer.handleBackspace()
+        // Use pattern matcher's backspace
+        val output = patternMatcher.handleBackspace()
         
-        val composing = syllableBuffer.getCurrentBuffer()
-        if (composing.isNotEmpty()) {
-            ic.setComposingText(composing, 1)
+        if (output.isNotEmpty()) {
+            ic.setComposingText(output, 1)
         } else {
-            // Buffer empty - use normal backspace
             ic.finishComposingText()
             ic.deleteSurroundingText(1, 0)
         }
