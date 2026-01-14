@@ -110,9 +110,15 @@ class KeyboardService : InputMethodService() {
                 }
             }
             
-            // Handle Ctrl+Tab for keyboard switching
+            // Handle Ctrl+Tab for keyboard switching (on/off)
             if (ctrlPressed && keyCode == KeyEvent.KEYCODE_TAB) {
                 switchToNextKeyboard()
+                return true
+            }
+            
+            // Handle Ctrl+Space for layout switching (Pyidaungsu/ZawCode/Myanmar3)
+            if (ctrlPressed && keyCode == KeyEvent.KEYCODE_SPACE) {
+                switchToNextLayout()
                 return true
             }
             
@@ -232,9 +238,7 @@ class KeyboardService : InputMethodService() {
      * This is triggered by Ctrl+Tab on hardware keyboard.
      */
     private fun switchToNextKeyboard() {
-        // In a full implementation, this would cycle through
-        // available keyboard layouts
-        // For now, we just toggle Myanmar3 mode
+        // Toggle Myanmar3 mode on/off
         toggleMyanmar3Hardware()
         
         // Show a toast notification
@@ -242,12 +246,30 @@ class KeyboardService : InputMethodService() {
     }
     
     /**
+     * Switches to the next keyboard layout (Pyidaungsu → ZawCode → Myanmar3).
+     * This is triggered by Ctrl+Space on hardware keyboard.
+     */
+    private fun switchToNextLayout() {
+        hardwareKeyMapper.switchToNextLayout()
+        
+        // Show notification with current layout name
+        showLayoutSwitchNotification()
+    }
+    
+    /**
      * Shows a notification when keyboard layout is switched.
      */
     private fun showKeyboardSwitchNotification() {
         val mode = if (myanmar3HardwareActive) "Myanmar3" else "Standard"
-        // Could show a toast or other notification here
-        // android.widget.Toast.makeText(this, "Switched to $mode", Toast.LENGTH_SHORT).show()
+        android.widget.Toast.makeText(this, "Keyboard: $mode", android.widget.Toast.LENGTH_SHORT).show()
+    }
+    
+    /**
+     * Shows a notification when layout is switched (Pyidaungsu/ZawCode/Myanmar3).
+     */
+    private fun showLayoutSwitchNotification() {
+        val layoutName = hardwareKeyMapper.getCurrentLayoutName()
+        android.widget.Toast.makeText(this, "Layout: $layoutName", android.widget.Toast.LENGTH_SHORT).show()
     }
     
     // ========================================================================

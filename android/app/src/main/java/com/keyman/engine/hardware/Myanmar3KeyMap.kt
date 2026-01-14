@@ -74,7 +74,7 @@ class Myanmar3KeyMap {
      * Contains consonants and important combining marks.
      */
     private val homeRowNormal = mapOf(
-        KeyEvent.KEYCODE_A to "\u1017",  // ဗ - BA
+        KeyEvent.KEYCODE_A to "\u1031",  // ေ - VOWEL SIGN E (combining)
         KeyEvent.KEYCODE_S to "\u103B",  // ှ - MEDIAL YA (combining)
         KeyEvent.KEYCODE_D to "\u102E",  // ီ - VOWEL SIGN II (combining)
         KeyEvent.KEYCODE_F to "\u1039",  // ် - VIRAMA/ASAT (combining)
@@ -92,7 +92,7 @@ class Myanmar3KeyMap {
      * Contains vowel signs and combining marks.
      */
     private val homeRowShift = mapOf(
-        KeyEvent.KEYCODE_A to "\u1031",  // ေ - VOWEL SIGN E (pre-base combining)
+        KeyEvent.KEYCODE_A to "\u1017",  // ဗ - BA
         KeyEvent.KEYCODE_S to "\u103C",  // ျ - MEDIAL RA (combining)
         KeyEvent.KEYCODE_D to "\u102D",  // ိ - VOWEL SIGN I (combining)
         KeyEvent.KEYCODE_F to "\u1037",  // ့ - DOT BELOW (combining)
@@ -165,14 +165,15 @@ class Myanmar3KeyMap {
      * ```
      */
     fun getCharacter(keyCode: Int, isShifted: Boolean): String? {
+        // REVERSED: Shift uses normal maps, no-shift uses shift maps
         return if (isShifted) {
-            topRowShift[keyCode] 
-                ?: homeRowShift[keyCode] 
-                ?: bottomRowShift[keyCode]
-        } else {
             topRowNormal[keyCode] 
                 ?: homeRowNormal[keyCode] 
                 ?: bottomRowNormal[keyCode]
+        } else {
+            topRowShift[keyCode] 
+                ?: homeRowShift[keyCode] 
+                ?: bottomRowShift[keyCode]
         }
     }
     
