@@ -6,10 +6,10 @@ import androidx.preference.PreferenceFragmentCompat
 import com.keyman.myanmar.R
 
 /**
- * Settings activity for Myanmar3 keyboard configuration.
+ * Settings activity for ZawCode keyboard configuration.
  * 
  * Provides user-facing settings for:
- * - Auto-activation of Myanmar3 hardware keyboard
+ * - Auto-activation of ZawCode hardware keyboard
  * - Keyboard behavior preferences
  * - Help and about information
  */

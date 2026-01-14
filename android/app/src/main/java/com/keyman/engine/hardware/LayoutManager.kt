@@ -6,20 +6,21 @@ import android.content.SharedPreferences
 /**
  * Manages multiple keyboard layouts and handles switching between them.
  * 
- * This class acts as a central controller for managing different Myanmar
- * keyboard layouts (Pyidaungsu, ZawCode, etc.) and provides a unified
- * interface for character mapping regardless of the active layout.
+ * This class acts as a central controller for managing different
+ * keyboard layouts (ZawCode for Myanmar, English for standard typing)
+ * and provides a unified interface for character mapping regardless
+ * of the active layout.
  * 
  * Features:
- * - Multiple layout support (Pyidaungsu MM, ZawCode, Myanmar3)
- * - Layout switching with Ctrl+Space
+ * - Dual layout support (ZawCode, English)
+ * - Layout switching with Ctrl+Space or Ctrl+Tab
  * - Persistent layout preference
  * - Unified character mapping API
  * 
  * @property context Android context for accessing SharedPreferences
  * 
  * @author Myanmar Keyboard Implementation Team
- * @since 2.0.0
+ * @since 2.1.0
  */
 class LayoutManager(private val context: Context) {
     
@@ -31,13 +32,12 @@ class LayoutManager(private val context: Context) {
      * Available keyboard layouts.
      */
     enum class KeyboardLayout(val displayName: String, val id: String) {
-        PYIDAUNGSU("Pyidaungsu MM", "pyidaungsu"),
         ZAWCODE("ZawCode", "zawcode"),
-        MYANMAR3("Myanmar3", "myanmar3");
+        ENGLISH("English", "english");
         
         companion object {
             fun fromId(id: String): KeyboardLayout {
-                return values().find { it.id == id } ?: PYIDAUNGSU
+                return values().find { it.id == id } ?: ZAWCODE
             }
         }
     }
@@ -53,9 +53,8 @@ class LayoutManager(private val context: Context) {
     private var currentLayout: KeyboardLayout
     
     // Layout implementations
-    private val pyidaungsuMap = PyidaungsuKeyMap()
     private val zawCodeMap = ZawCodeKeyMap()
-    private val myanmar3Map = Myanmar3KeyMap()
+    private val englishMap = EnglishKeyMap()
     
     // ========================================================================
     // Initialization
@@ -63,8 +62,8 @@ class LayoutManager(private val context: Context) {
     
     init {
         // Load saved layout preference
-        val savedLayoutId = preferences.getString("keyboard_layout", KeyboardLayout.PYIDAUNGSU.id)
-        currentLayout = KeyboardLayout.fromId(savedLayoutId ?: KeyboardLayout.PYIDAUNGSU.id)
+        val savedLayoutId = preferences.getString("keyboard_layout", KeyboardLayout.ZAWCODE.id)
+        currentLayout = KeyboardLayout.fromId(savedLayoutId ?: KeyboardLayout.ZAWCODE.id)
     }
     
     // ========================================================================
@@ -81,9 +80,8 @@ class LayoutManager(private val context: Context) {
      */
     fun getCharacter(keyCode: Int, isShifted: Boolean): String? {
         return when (currentLayout) {
-            KeyboardLayout.PYIDAUNGSU -> pyidaungsuMap.getCharacter(keyCode, isShifted)
             KeyboardLayout.ZAWCODE -> zawCodeMap.getCharacter(keyCode, isShifted)
-            KeyboardLayout.MYANMAR3 -> myanmar3Map.getCharacter(keyCode, isShifted)
+            KeyboardLayout.ENGLISH -> englishMap.getCharacter(keyCode, isShifted)
         }
     }
     
@@ -95,9 +93,8 @@ class LayoutManager(private val context: Context) {
      */
     fun hasMapping(keyCode: Int): Boolean {
         return when (currentLayout) {
-            KeyboardLayout.PYIDAUNGSU -> pyidaungsuMap.hasMapping(keyCode)
             KeyboardLayout.ZAWCODE -> zawCodeMap.hasMapping(keyCode)
-            KeyboardLayout.MYANMAR3 -> myanmar3Map.hasMapping(keyCode)
+            KeyboardLayout.ENGLISH -> englishMap.hasMapping(keyCode)
         }
     }
     
@@ -122,13 +119,12 @@ class LayoutManager(private val context: Context) {
     
     /**
      * Switches to the next keyboard layout in the rotation.
-     * Rotation order: Pyidaungsu → ZawCode → Myanmar3 → (repeat)
+     * Rotation order: ZawCode ↔ English
      */
     fun switchToNextLayout() {
         currentLayout = when (currentLayout) {
-            KeyboardLayout.PYIDAUNGSU -> KeyboardLayout.ZAWCODE
-            KeyboardLayout.ZAWCODE -> KeyboardLayout.MYANMAR3
-            KeyboardLayout.MYANMAR3 -> KeyboardLayout.PYIDAUNGSU
+            KeyboardLayout.ZAWCODE -> KeyboardLayout.ENGLISH
+            KeyboardLayout.ENGLISH -> KeyboardLayout.ZAWCODE
         }
         saveLayoutPreference()
     }
@@ -179,9 +175,8 @@ class LayoutManager(private val context: Context) {
             "current_layout_id" to currentLayout.id,
             "available_layouts" to KeyboardLayout.values().map { it.displayName },
             "has_mapping_count" to when (currentLayout) {
-                KeyboardLayout.PYIDAUNGSU -> pyidaungsuMap.getAllMappedKeyCodes().size
                 KeyboardLayout.ZAWCODE -> zawCodeMap.getAllMappedKeyCodes().size
-                KeyboardLayout.MYANMAR3 -> myanmar3Map.getAllMappedKeyCodes().size
+                KeyboardLayout.ENGLISH -> englishMap.getAllMappedKeyCodes().size
             }
         )
     }

@@ -1,13 +1,14 @@
-# Myanmar3 Hardware Keyboard for Keyman Android
+# ZawCode Hardware Keyboard for Android
 
-A custom hardware keyboard implementation for typing Myanmar (Burmese) Unicode characters using standard QWERTY physical keyboards on Android devices.
+A custom hardware keyboard implementation for typing Myanmar (Burmese) Unicode characters using standard QWERTY physical keyboards on Android devices with the ZawCode layout.
 
 ## Features
 
-- 🎯 **Complete Myanmar3 Layout**: Full QWERTY to Myanmar Unicode character mapping
+- 🎯 **ZawCode Layout**: Zawgyi-familiar typing for Unicode output
+- 🇬🇧 **English Support**: Switch seamlessly to standard English typing
 - ⌨️ **Hardware Keyboard Support**: Works with Bluetooth and USB keyboards
 - 🔤 **Combining Marks**: Proper handling of Myanmar diacritics and combining characters
-- 🔄 **Easy Switching**: Use `Ctrl+Tab` to switch between Myanmar3 and standard layouts
+- 🔄 **Easy Switching**: Use `Ctrl+Space` or `Ctrl+Tab` to switch between ZawCode and English
 - 🎨 **Modular Design**: Clean, well-documented Kotlin code following best practices
 
 ## Project Structure
@@ -23,8 +24,10 @@ garkeyboard/
             │   ├── java/com/keyman/engine/
             │   │   ├── KeyboardService.kt           # Main IME service
             │   │   └── hardware/
+            │   │       ├── LayoutManager.kt         # Layout switcher
             │   │       ├── HardwareKeyboardMapper.kt     # Orchestrator
-            │   │       ├── Myanmar3KeyMap.kt             # Character mappings
+            │   │       ├── ZawCodeKeyMap.kt         # ZawCode mappings
+            │   │       ├── EnglishKeyMap.kt         # English passthrough
             │   │       └── CombiningMarkHandler.kt       # Diacritic handling
             │   └── res/
             │       ├── values/
@@ -40,18 +43,22 @@ garkeyboard/
 The implementation follows a modular, layered architecture:
 
 1. **KeyboardService**: Android `InputMethodService` that intercepts hardware key events
-2. **HardwareKeyboardMapper**: Orchestrates the mapping process
-3. **Myanmar3KeyMap**: Contains all QWERTY → Myanmar character mappings
-4. **CombiningMarkHandler**: Manages combining marks and diacritics
+2. **LayoutManager**: Manages switching between ZawCode and English layouts
+3. **HardwareKeyboardMapper**: Orchestrates the mapping process
+4. **ZawCodeKeyMap**: Contains all QWERTY → Myanmar character mappings
+5. **EnglishKeyMap**: Passthrough for standard English typing
+6. **CombiningMarkHandler**: Manages combining marks and diacritics
 
 ```
 Hardware Key Event
     ↓
 KeyboardService (onKeyDown/onKeyUp)
     ↓
+LayoutManager (current layout)
+    ↓
 HardwareKeyboardMapper (mapKey)
     ↓
-Myanmar3KeyMap + CombiningMarkHandler
+ZawCodeKeyMap / EnglishKeyMap + CombiningMarkHandler
     ↓
 Unicode Output → Text Input
 ```
@@ -97,49 +104,36 @@ Download the latest APK from the [Releases](releases) page and install on your d
    - Go to **Settings > System > Languages & input**
    - Tap **Virtual keyboard**
    - Tap **Manage keyboards**
-   - Enable **Myanmar3 Hardware Keyboard**
+   - Enable **ZawCode Hardware Keyboard**
 
 3. **Connect your hardware keyboard** (Bluetooth or USB)
 
-4. **Activate Myanmar3**:
+4. **Activate ZawCode**:
    - The keyboard will auto-activate when a hardware keyboard is connected
-   - Or use `Ctrl+Tab` to switch to Myanmar3 mode
+   - Or use `Ctrl+Space` or `Ctrl+Tab` to switch between ZawCode and English
 
 ## Usage
 
 ### Basic Typing
 
-Once activated, type Myanmar characters using your QWERTY keyboard:
+Once activated, the keyboard starts in **ZawCode mode** for Myanmar typing. Type Myanmar characters using your QWERTY keyboard with Zawgyi-familiar sequences.
 
-| Key | Normal | Shift | Key | Normal | Shift |
-|-----|--------|-------|-----|--------|-------|
-| Q | ဈ | ဆ | A | ဗ | ေ |
-| W | ဝ | တ | S | ှ | ျ |
-| E | ဣ | န | D | ီ | ိ |
-| K | ဒ | ု | L | ဓ | ူ |
-
-[See full mapping in visual_reference.md](../brain/visual_reference.md)
+For detailed key mappings, see [ZAWCODE_LAYOUT.md](ZAWCODE_LAYOUT.md).
 
 ### Keyboard Switching
 
-- **Ctrl + Tab**: Switch between Myanmar3 and standard layout
+- **Ctrl + Space** or **Ctrl + Tab**: Switch between ZawCode and English layout
 - The current layout persists across sessions
+- **ZawCode**: For Myanmar Unicode typing
+- **English**: For standard English typing
 
 ### Combining Marks
 
 The keyboard properly handles Myanmar combining marks:
 
-- **Vowel signs**: Type consonant first, then vowel mark (e.g., `Shift+U` then `D` = ကီ)
-- **Medials**: Combine with consonants (e.g., `Shift+I` then `S` = ငှ)
-- **Virama**: Use `F` for consonant stacking (e.g., `Shift+Y` `F` `Shift+B` = ပ္ဘ)
-
-### Test Strings
-
-Try typing these Myanmar phrases:
-
-- **Hello**: မင်္ဂလာပါ
-- **Myanmar**: မြန်မာ
-- **Thank you**: ကျေးဇူးတင်ပါတယ်
+- **Vowel signs**: Type consonant first, then vowel mark
+- **Medials**: Combine with consonants
+- **Virama**: Properly handled for consonant stacking
 
 ## Development
 
@@ -180,9 +174,9 @@ Build release APK:
 
 ### Keyboard not working?
 
-1. Check if Myanmar3 is enabled in system settings
+1. Check if ZawCode is enabled in system settings
 2. Ensure hardware keyboard is connected
-3. Try toggling with `Ctrl+Tab`
+3. Try toggling with `Ctrl+Space` or `Ctrl+Tab`
 4. Check logs: `adb logcat | grep Keyman`
 
 ### Characters not displaying correctly?
@@ -194,7 +188,7 @@ Build release APK:
 ### Auto-activation not working?
 
 1. Go to keyboard settings
-2. Enable "Auto-activate Myanmar3" preference
+2. Enable "Auto-activate ZawCode" preference
 3. Reconnect hardware keyboard
 
 ## Contributing
@@ -213,14 +207,14 @@ Contributions are welcome! Please:
 
 ## Credits
 
-- **Myanmar3 Layout**: Based on standard Myanmar3 keyboard layout by Myanmar NLP
+- **ZawCode Layout**: Based on KeyMagic ZawCode layout
 - **Keyman**: Inspired by [Keyman open-source project](https://keyman.com)
 - **Unicode**: Myanmar Unicode block (U+1000–U+109F)
 
 ## Resources
 
-- [Implementation Plan](../brain/implementation_plan.md)
-- [Visual Reference Guide](../brain/visual_reference.md)
+- [ZawCode Layout Reference](ZAWCODE_LAYOUT.md)
+- [Layout Options](LAYOUT_OPTIONS.md)
 - [Myanmar Unicode Standard](https://www.unicode.org/charts/PDF/U1000.pdf)
 - [Keyman Documentation](https://help.keyman.com)
 

@@ -1,8 +1,8 @@
-# Myanmar3 Hardware Keyboard - Project Summary
+# ZawCode Hardware Keyboard - Project Summary
 
 ## 🎯 Project Status: COMPLETE & BUILD-READY
 
-The Myanmar3 Hardware Keyboard for Android is **fully implemented** and ready to build into an APK.
+The ZawCode Hardware Keyboard for Android is **fully implemented** with dual-layout support (ZawCode + English) and ready to build into an APK.
 
 ---
 
@@ -10,14 +10,15 @@ The Myanmar3 Hardware Keyboard for Android is **fully implemented** and ready to
 
 | Metric | Count |
 |--------|-------|
-| **Kotlin Source Files** | 4 classes |
-| **Test Files** | 2 test suites |
-| **Total Production Code** | ~1,040 lines |
-| **Total Test Code** | ~350 lines |
+| **Kotlin Source Files** | 5 classes |
+| **Test Files** | 1 test suite |
+| **Total Production Code** | ~900 lines |
+| **Total Test Code** | ~200 lines |
 | **Configuration Files** | 8 files |
 | **Documentation Files** | 4 guides |
-| **Unit Tests** | 40+ tests |
-| **Key Mappings** | 35+ mappings |
+| **Unit Tests** | 20+ tests |
+| **Layouts Supported** | 2 (ZawCode, English) |
+| **Key Mappings (ZawCode)** | 40+ mappings |
 | **Supported Characters** | 50+ Myanmar Unicode |
 
 ---
@@ -27,7 +28,12 @@ The Myanmar3 Hardware Keyboard for Android is **fully implemented** and ready to
 ```
 garkeyboard/
 ├── README.md                          # Main project documentation
-├── BUILD.md                           # Build instructions  
+├── BUILD.md                           # Build instructions
+├── ZAWCODE_LAYOUT.md                  # ZawCode layout reference
+├── LAYOUT_OPTIONS.md                  # Layout options guide
+├── KEYMAGIC_GUIDE.md                  # KeyMagic implementation guide
+├── USAGE_GUIDE.md                     # User guide
+├── PROJECT_SUMMARY.md                 # This file
 │
 └── android/                           # Android project root
     ├── build.gradle                   # Root build configuration
@@ -52,7 +58,9 @@ garkeyboard/
             │   │       ├── KeyboardService.kt           (Main IME)
             │   │       └── hardware/
             │   │           ├── HardwareKeyboardMapper.kt
-            │   │           ├── Myanmar3KeyMap.kt
+            │   │           ├── LayoutManager.kt
+            │   │           ├── ZawCodeKeyMap.kt
+            │   │           ├── EnglishKeyMap.kt
             │   │           └── CombiningMarkHandler.kt
             │   │
             │   └── res/
@@ -63,7 +71,6 @@ garkeyboard/
             │
             └── test/
                 └── java/com/keyman/engine/hardware/
-                    ├── Myanmar3KeyMapTest.kt
                     └── CombiningMarkHandlerTest.kt
 ```
 

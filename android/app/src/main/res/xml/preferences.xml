@@ -6,7 +6,7 @@
         app:iconSpaceReserved="false">
         
         <SwitchPreferenceCompat
-            app:key="auto_activate_myanmar3"
+            app:key="auto_activate_zawcode"
             app:title="@string/pref_auto_activate_title"
             app:summary="@string/pref_auto_activate_summary"
             app:defaultValue="true"

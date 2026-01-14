@@ -5,7 +5,7 @@
     
     <!-- Subtype for Myanmar3 Hardware Keyboard -->
     <subtype
-        android:label="@string/subtype_myanmar3_hardware"
+        android:label="@string/subtype_zawcode_hardware"
         android:imeSubtypeLocale="my"
         android:imeSubtypeMode="keyboard"
         android:imeSubtypeExtraValue="KeyboardLayoutSet=myanmar3_hardware,AsciiCapable,SupportTouchPositionCorrection,EmojiCapable"
