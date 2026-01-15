@@ -99,8 +99,9 @@ class ZawCodeKeyMap {
         KeyEvent.KEYCODE_C to "\u1001",  // ခ - KHA
         KeyEvent.KEYCODE_V to "\u101C",  // လ - LA
         KeyEvent.KEYCODE_B to "\u1018",  // ဘ - BHA
-        KeyEvent.KEYCODE_N to "\u100A",  // ည - NNYA
+        KeyEvent.KEYCODE_N to "\u100A",  // ည - NYA
         KeyEvent.KEYCODE_M to "\u102C",  // ာ - VOWEL SIGN AA
+        KeyEvent.KEYCODE_SPACE to " ",    // Spaces
         KeyEvent.KEYCODE_COMMA to "\u101A",   // ယ - YA
         KeyEvent.KEYCODE_PERIOD to ".",       // . - Latin period
         KeyEvent.KEYCODE_SLASH to "\u104B"    // ။ - Myanmar period

@@ -51,40 +51,82 @@ class PatternMatcher {
      * @return Transformed output string
      */
     fun processInput(char: String): String {
-        buffer.append(char)
+        // LOOKAHEAD STRATEGY:
+        // Advanced patterns (Priority > 10) expect Unicode characters, not raw keys.
+        // So we tentatively map the input key to see what it would be (e.g., 'h' -> '့').
         
-        val context = MatchContext(
-            buffer = buffer.toString(),
-            lastKey = char
-        )
-        
-        // Try to find matching rule (high priority = context-aware)
+        // 1. Find basic mapping (Priority 10) for this char
+        var mappedChar = char
         for (rule in rules) {
+            if (rule.priority <= 10 && rule.lhs == "'$char'") {
+                // Found basic mapping - convert RHS to char
+                mappedChar = convertRhsToChar(rule.rhs)
+                break
+            }
+        }
+        
+        // 2. Try Advanced Rules (Priority > 10) with mapped char
+        val tempBufferStr = buffer.toString() + mappedChar
+        val context = MatchContext(tempBufferStr, char)
+        
+        for (rule in rules) {
+            if (rule.priority <= 10) continue // Skip basic rules in this phase
+            
             val matchResult = rule.matches(context)
             if (matchResult != null) {
                 val output = rule.generateOutput(matchResult)
                 
-                // CRITICAL: Replace matched portion with output
+                // Advanced Rule Matched!
+                // Update buffer: remove matched portion from tempBuffer, append output
+                val matchedText = matchResult.matched
+                if (tempBufferStr.endsWith(matchedText)) {
+                    val prefix = tempBufferStr.substring(0, tempBufferStr.length - matchedText.length)
+                    buffer.clear()
+                    buffer.append(prefix + output)
+                    return buffer.toString()
+                }
+            }
+        }
+        
+        // 3. Fallback: Standard Simple Matching
+        // If no advanced rule matched, just append raw char and let basic rules handle it
+        buffer.append(char)
+        val basicContext = MatchContext(buffer.toString(), char)
+        
+        for (rule in rules) {
+            // Only strictly needed for basic rules now, but safe to check all
+            val matchResult = rule.matches(basicContext)
+            
+            if (matchResult != null) {
+                val output = rule.generateOutput(matchResult)
+                
+                // Replace matched portion
                 val matchedText = matchResult.matched
                 val bufferText = buffer.toString()
                 
                 if (bufferText.endsWith(matchedText)) {
-                    // Remove matched portion and add output
                     val newBuffer = bufferText.substring(0, bufferText.length - matchedText.length) + output
                     buffer.clear()
                     buffer.append(newBuffer)
-                } else {
-                    // Pattern generated output without match - just use it
-                    buffer.clear()
-                    buffer.append(output)
+                    return buffer.toString()
                 }
-                
-                return buffer.toString()
             }
         }
         
-        // No rule matched - return buffer as-is
         return buffer.toString()
+    }
+    
+    // Helper to convert RHS (e.g., "U1037") to string
+    private fun convertRhsToChar(rhs: String): String {
+        val output = rhs.trim()
+        if (output.startsWith("U") && output.length == 5) { // Simple Uxxxx
+            try {
+                val hexCode = output.substring(1)
+                val charCode = hexCode.toInt(16)
+                return charCode.toChar().toString()
+            } catch (e: Exception) { /* ignore */ }
+        }
+        return output.removeSurrounding("'", "'")
     }
     
     /**

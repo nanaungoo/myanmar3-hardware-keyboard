@@ -34,6 +34,9 @@ class KeyboardService : InputMethodService() {
     
     // Pattern matcher for KeyMagic-style rules
     private val patternMatcher = PatternMatcher().apply {
+        // Add advanced patterns first (higher priority)
+        addRules(com.keyman.engine.pattern.KeyMagicAdvancedPatterns.getRules())
+        // Then add basic ZawCode mappings
         addRules(ZawCodePatterns.getRules())
     }
     
