@@ -113,6 +113,16 @@ class PatternMatcher {
             }
         }
         
+        // 4. Final Polish: Run the "Myanmar Syllable Fixer"
+        // This enforces Logical Order and cleans up regular expressions
+        val rawBuffer = buffer.toString()
+        val normalized = com.keyman.engine.util.MyanmarSyllableFixer.normalizeMyanmarText(rawBuffer)
+        
+        if (normalized != rawBuffer) {
+            buffer.clear()
+            buffer.append(normalized)
+        }
+        
         return buffer.toString()
     }
     
@@ -144,10 +154,41 @@ class PatternMatcher {
     /**
      * Handles backspace by removing last character.
      */
+    /**
+     * Handles backspace with "Smart Delete" logic.
+     * 
+     * - Deletes single marks (Medials, Vowels, Tones)
+     * - Deletes stacked consonants (Virama + Consonant) together
+     */
     fun handleBackspace(): String {
-        if (buffer.isNotEmpty()) {
-            buffer.deleteCharAt(buffer.length - 1)
+        if (buffer.isEmpty()) return ""
+
+        val lastCharIndex = buffer.length - 1
+        val lastChar = buffer[lastCharIndex].toString()
+        val handler = com.keyman.engine.hardware.CombiningMarkHandler()
+
+        // logic:
+        // 1. If MARK, delete only that.
+        // 2. If CONSONANT, check if Virama is before it. If so, delete both.        
+        if (handler.isCombiningMark(lastChar)) {
+             buffer.deleteCharAt(lastCharIndex)
+        } else if (handler.isConsonant(lastChar)) {
+             // Check for Virama before consonant (STACKED)
+             if (lastCharIndex > 0) {
+                 val prevChar = buffer[lastCharIndex - 1].toString()
+                 if (prevChar == "\u1039") { // Virama
+                     buffer.delete(lastCharIndex - 1, lastCharIndex + 1)
+                 } else {
+                     buffer.deleteCharAt(lastCharIndex)
+                 }
+             } else {
+                 buffer.deleteCharAt(lastCharIndex)
+             }
+        } else {
+             // Standard delete for others
+             buffer.deleteCharAt(lastCharIndex)
         }
+        
         return buffer.toString()
     }
 }

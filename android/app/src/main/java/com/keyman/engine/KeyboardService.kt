@@ -32,13 +32,10 @@ class KeyboardService : InputMethodService() {
     // Hardware keyboard mapper
     private lateinit var hardwareKeyMapper: HardwareKeyboardMapper
     
-    // Pattern matcher for KeyMagic-style rules
-    private val patternMatcher = PatternMatcher().apply {
-        // Add advanced patterns first (higher priority)
-        addRules(com.keyman.engine.pattern.KeyMagicAdvancedPatterns.getRules())
-        // Then add basic ZawCode mappings
-        addRules(ZawCodePatterns.getRules())
-    }
+    // Segmenter for intelligent syllable handling
+    // Segmenter for intelligent syllable handling
+    private val syllableSegmenter = com.keyman.engine.pattern.MyanmarSyllableSegmenter()
+
     
     /**
      * Tracks whether Myanmar3 hardware keyboard mode is currently active.
@@ -135,10 +132,9 @@ class KeyboardService : InputMethodService() {
             if (isMyanmar3HardwareActive() && keyCode == KeyEvent.KEYCODE_ENTER) {
                 val ic = currentInputConnection
                 if (ic != null) {
-                    // Commit any composing text to prevent accumulation
-                    ic.finishComposingText()
-                    // CRITICAL: Clear pattern matcher buffer
-                    patternMatcher.clear()
+                    // Start new line = finish syllable
+                    // Flush whatever is in state machine
+                    syllableSegmenter.clear(ic)
                 }
                 // Let system handle the Enter (newline)
                 return super.onKeyDown(keyCode, event)
@@ -261,11 +257,10 @@ class KeyboardService : InputMethodService() {
     private fun handleMyanmarInput(text: String) {
         val ic = currentInputConnection ?: return
         
-        // Process input through pattern matcher
-        val output = patternMatcher.processInput(text)
-        
-        // Show as composing text
-        ic.setComposingText(output, 1)
+        // Process input through Segmenter
+        for (char in text) {
+            syllableSegmenter.handleInput(char, ic)
+        }
     }
     
     /**
@@ -274,12 +269,12 @@ class KeyboardService : InputMethodService() {
     private fun handleMyanmarBackspace() {
         val ic = currentInputConnection ?: return
         
-        // Use pattern matcher's backspace
-        val output = patternMatcher.handleBackspace()
+        // Segmenter handles backspace (smart delete from buffer)
+        val handled = syllableSegmenter.handleBackspace(ic)
         
-        if (output.isNotEmpty()) {
-            ic.setComposingText(output, 1)
-        } else {
+        if (!handled) {
+            // If buffer was empty, let system delete surrounding text
+            // Ensure composing is finished
             ic.finishComposingText()
             ic.deleteSurroundingText(1, 0)
         }
